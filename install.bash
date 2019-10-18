@@ -116,16 +116,7 @@ fi
 
 # GPU flag
 MSG "Checking system for GPU"
-if [ "${OS}" == "Linux" ]; then
-    lspci | grep -q "NVIDIA"
-    if [ $? -eq 0 ]; then
-        GCARD=ON
-    else
-        GCARD=OFF
-    fi
-elif [ "${OS}" == "Darwin" ]; then
-    GCARD=OFF
-fi
+GCARD=ON
 MSG "Setting GCARD=${GCARD}"
 
 
