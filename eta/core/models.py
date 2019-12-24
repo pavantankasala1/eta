@@ -33,6 +33,7 @@ import eta
 import eta.constants as etac
 from eta.core.config import Config, Configurable
 from eta.core.serial import read_pickle, Serializable
+import eta.core.storage as etas
 import eta.core.utils as etau
 import eta.core.web as etaw
 
@@ -1068,10 +1069,18 @@ class ETAModelManager(ModelManager):
     def _download_model(self, model_path):
         if self.config.google_drive_id:
             gid = self.config.google_drive_id
+
             logger.info(
-                "Downloading model from Google Drive ID '%s' to '%s'",
+                "Downloading model from Google Drive ID '%s' to '%s' USING"
+                " INTERNAL WORKAROUND",
                 gid, model_path)
-            etaw.download_google_drive_file(gid, path=model_path)
+            client = etas.GoogleDriveStorageClient()
+            client.download(gid, model_path)
+
+            # logger.info(
+            #     "Downloading model from Google Drive ID '%s' to '%s'",
+            #     gid, model_path)
+            # etaw.download_google_drive_file(gid, path=model_path)
         elif self.config.url:
             url = self.config.url
             logger.info(
