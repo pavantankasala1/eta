@@ -1,1 +1,1 @@
-global-include *
+include eta/version.json
