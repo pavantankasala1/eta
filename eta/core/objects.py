@@ -48,7 +48,7 @@ class DetectedObject(Serializable, HasBoundingBox):
             self, label, bounding_box, mask=None, confidence=None,
             top_k_probs=None, index=None, score=None, frame_number=None,
             index_in_frame=None, eval_type=None, event_indices=None,
-            attrs=None):
+            attrs=None, uuid=None):
         '''Creates a DetectedObject instance.
 
         Args:
@@ -83,6 +83,7 @@ class DetectedObject(Serializable, HasBoundingBox):
         self.event_indices = set(event_indices or [])
         self.attrs = attrs or AttributeContainer()
         self._meta = None  # Usable by clients to store temporary metadata
+        self.uuid = uuid
 
     @property
     def has_attributes(self):
@@ -132,7 +133,7 @@ class DetectedObject(Serializable, HasBoundingBox):
 
         _optional_attrs = [
             "mask", "confidence", "top_k_probs", "index", "score",
-            "frame_number", "index_in_frame", "eval_type"]
+            "frame_number", "index_in_frame", "eval_type", "uuid"]
         _attrs.extend(
             [a for a in _optional_attrs if getattr(self, a) is not None])
 
@@ -173,7 +174,8 @@ class DetectedObject(Serializable, HasBoundingBox):
             index_in_frame=d.get("index_in_frame", None),
             attrs=attrs,
             eval_type=d.get("eval_type", None),
-            event_indices=set(d.get("event_indices", []))
+            event_indices=set(d.get("event_indices", [])),
+            uuid=d.get("uuid", None)
         )
 
 

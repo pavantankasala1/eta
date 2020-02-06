@@ -75,7 +75,7 @@ class Attribute(Serializable):
     module.
     '''
 
-    def __init__(self, name, value, confidence=None):
+    def __init__(self, name, value, confidence=None, uuid=None):
         '''Constructs an Attribute instance.
 
         Args:
@@ -83,11 +83,13 @@ class Attribute(Serializable):
             value: the attribute value
             confidence: an optional confidence of the value, in [0, 1]. By
                 default, no confidence is stored
+            uuid: a bookkeeping uuid
         '''
         self.type = etau.get_class_name(self)
         self.name = name
         self.value = self.parse_value(value)
         self.confidence = confidence
+        self.uuid = uuid
 
     @classmethod
     def get_schema_cls(cls):
@@ -107,8 +109,10 @@ class Attribute(Serializable):
         from this list.
         '''
         _attrs = ["type", "name", "value"]
-        if self.confidence is not None:
-            _attrs.append("confidence")
+        _optional_attrs = ["confidence", "uuid"]
+        _attrs.extend(
+            [a for a in _optional_attrs if getattr(self, a) is not None])
+
         return _attrs
 
     @classmethod
@@ -121,7 +125,8 @@ class Attribute(Serializable):
         initialized.
         '''
         confidence = d.get("confidence", None)
-        return cls(d["name"], d["value"], confidence=confidence)
+        uuid = d.get("uuid", None)
+        return cls(d["name"], d["value"], confidence=confidence, uuid=uuid)
 
     @classmethod
     def from_dict(cls, d):
@@ -133,7 +138,7 @@ class Attribute(Serializable):
 class CategoricalAttribute(Attribute):
     '''Class encapsulating categorical attributes.'''
 
-    def __init__(self, name, value, confidence=None, top_k_probs=None):
+    def __init__(self, name, value, confidence=None, top_k_probs=None, uuid=None):
         '''Constructs a CategoricalAttribute instance.
 
         Args:
@@ -143,9 +148,10 @@ class CategoricalAttribute(Attribute):
                 default, no confidence is stored
             top_k_probs: an optional dictionary mapping values to
                 probabilities. By default, no probabilities are stored
+            uuid: a bookkeeping uuid
         '''
         super(CategoricalAttribute, self).__init__(
-            name, value, confidence=confidence)
+            name, value, confidence=confidence, uuid=uuid)
         self.top_k_probs = top_k_probs
 
     @classmethod

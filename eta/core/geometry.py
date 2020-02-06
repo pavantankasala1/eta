@@ -35,7 +35,7 @@ class BoundingBox(Serializable):
     greater than their top-left coordinates.
     '''
 
-    def __init__(self, top_left, bottom_right):
+    def __init__(self, top_left, bottom_right, uuid=None):
         '''Creates a BoundingBox instance.
 
         Args:
@@ -45,6 +45,7 @@ class BoundingBox(Serializable):
         '''
         self.top_left = top_left
         self.bottom_right = bottom_right
+        self.uuid = uuid
 
     def __str__(self):
         return "%s x %s" % (self.top_left, self.bottom_right)
@@ -309,7 +310,9 @@ class BoundingBox(Serializable):
         '''
         return cls(
             RelativePoint.from_dict(d["top_left"]),
-            RelativePoint.from_dict(d["bottom_right"]))
+            RelativePoint.from_dict(d["bottom_right"]),
+            uuid=d.get("uuid", None)
+        )
 
 
 class HasBoundingBox(object):
