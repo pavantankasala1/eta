@@ -56,6 +56,19 @@ class BoundingBox(Serializable):
             self.bottom_right == bbox.bottom_right
         )
 
+    def attributes(self):
+        '''Returns the list of attributes to serialize.
+
+        Optional attributes that were not provided (i.e., are None) are omitted
+        from this list.
+        '''
+        _attrs = ["top_left", "bottom_right"]
+        _optional_attrs = ["uuid"]
+        _attrs.extend(
+            [a for a in _optional_attrs if getattr(self, a) is not None])
+
+        return _attrs
+
     @property
     def top_right(self):
         '''Returns a top right RelativePoint'''
