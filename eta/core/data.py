@@ -203,14 +203,17 @@ class AttributeSchema(Serializable):
     module.
     '''
 
-    def __init__(self, name):
+    def __init__(self, name, static=False):
         '''Initializes the AttributeSchema. All subclasses should call this
         constructor.
 
         Args:
             name: the name of the attribute
+            static: whether the attribute value can change over time in a
+                video
         '''
         self.name = name
+        self.static = bool(static)
         self.type = etau.get_class_name(self)[:-6]  # removes "Schema"
         self._attr_cls = etau.get_class(self.type)
 
@@ -297,7 +300,9 @@ class AttributeSchema(Serializable):
         '''
         attr_cls = etau.get_class(d["type"])
         schema_cls = attr_cls.get_schema_cls()
-        return schema_cls(d["name"], **schema_cls.get_kwargs(d))
+        kwargs = schema_cls.get_kwargs(d)
+        kwargs.update({"static": d.get("static", False)})
+        return schema_cls(d["name"], **kwargs)
 
 
 class AttributeSchemaError(Exception):
@@ -308,7 +313,7 @@ class AttributeSchemaError(Exception):
 class CategoricalAttributeSchema(AttributeSchema):
     '''Class that encapsulates the schema of categorical attributes.'''
 
-    def __init__(self, name, categories=None):
+    def __init__(self, name, categories=None, static=False, exclusive=False):
         '''Creates a CategoricalAttributeSchema instance.
 
         Args:
@@ -316,7 +321,9 @@ class CategoricalAttributeSchema(AttributeSchema):
             categories: a set of valid categories for the attribute. By
                 default, an empty set is used
         '''
-        super(CategoricalAttributeSchema, self).__init__(name)
+        super(CategoricalAttributeSchema, self).__init__(
+            name, static=static)
+        self.exclusive = bool(exclusive)
         self.categories = set(categories or [])
 
     def is_valid_value(self, value):
@@ -337,20 +344,24 @@ class CategoricalAttributeSchema(AttributeSchema):
         '''Extracts the relevant keyword arguments for this schema from the
         JSON dictionary.
         '''
-        return {"categories": d.get("categories", None)}
+        return {
+            "categories": d.get("categories", None),
+            "exclusive": d.get("exclusive", None)
+        }
 
 
 class NumericAttributeSchema(AttributeSchema):
     '''Class that encapsulates the schema of numeric attributes.'''
 
-    def __init__(self, name, range=None):
+    def __init__(self, name, static=False, range=None):
         '''Creates a NumericAttributeSchema instance.
 
         Args:
             name: the name of the attribute
             range: the (min, max) range for the attribute
         '''
-        super(NumericAttributeSchema, self).__init__(name)
+        super(NumericAttributeSchema, self).__init__(
+            name, static=static)
         self.range = tuple(range or [])
 
     def is_valid_value(self, value):
@@ -389,13 +400,13 @@ class NumericAttributeSchema(AttributeSchema):
 class BooleanAttributeSchema(AttributeSchema):
     '''Class that encapsulates the schema of boolean attributes.'''
 
-    def __init__(self, name):
+    def __init__(self, name, static=False):
         '''Creates a BooleanAttributeSchema instance.
 
         Args:
             name: the name of the attribute
         '''
-        super(BooleanAttributeSchema, self).__init__(name)
+        super(BooleanAttributeSchema, self).__init__(name, static=static)
 
     def is_valid_value(self, value):
         '''Returns True/False if value is valid for the attribute.'''
