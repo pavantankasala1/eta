@@ -203,7 +203,7 @@ class AttributeSchema(Serializable):
     module.
     '''
 
-    def __init__(self, name, static=False):
+    def __init__(self, name, static=False, default=None):
         '''Initializes the AttributeSchema. All subclasses should call this
         constructor.
 
@@ -214,6 +214,7 @@ class AttributeSchema(Serializable):
         '''
         self.name = name
         self.static = bool(static)
+        self.default = default
         self.type = etau.get_class_name(self)[:-6]  # removes "Schema"
         self._attr_cls = etau.get_class(self.type)
 
@@ -313,7 +314,8 @@ class AttributeSchemaError(Exception):
 class CategoricalAttributeSchema(AttributeSchema):
     '''Class that encapsulates the schema of categorical attributes.'''
 
-    def __init__(self, name, categories=None, static=False, exclusive=False):
+    def __init__(self, name, categories=None, static=False, exclusive=False,
+                 default=None):
         '''Creates a CategoricalAttributeSchema instance.
 
         Args:
@@ -322,7 +324,7 @@ class CategoricalAttributeSchema(AttributeSchema):
                 default, an empty set is used
         '''
         super(CategoricalAttributeSchema, self).__init__(
-            name, static=static)
+            name, static=static, default=default)
         self.exclusive = bool(exclusive)
         self.categories = set(categories or [])
 
@@ -353,7 +355,7 @@ class CategoricalAttributeSchema(AttributeSchema):
 class NumericAttributeSchema(AttributeSchema):
     '''Class that encapsulates the schema of numeric attributes.'''
 
-    def __init__(self, name, static=False, range=None):
+    def __init__(self, name, static=False, range=None, default=None):
         '''Creates a NumericAttributeSchema instance.
 
         Args:
@@ -361,7 +363,7 @@ class NumericAttributeSchema(AttributeSchema):
             range: the (min, max) range for the attribute
         '''
         super(NumericAttributeSchema, self).__init__(
-            name, static=static)
+            name, static=static, default=default)
         self.range = tuple(range or [])
 
     def is_valid_value(self, value):
@@ -406,7 +408,8 @@ class BooleanAttributeSchema(AttributeSchema):
         Args:
             name: the name of the attribute
         '''
-        super(BooleanAttributeSchema, self).__init__(name, static=static)
+        super(BooleanAttributeSchema, self).__init__(name, static=static,
+                                                     default=default)
 
     def is_valid_value(self, value):
         '''Returns True/False if value is valid for the attribute.'''
