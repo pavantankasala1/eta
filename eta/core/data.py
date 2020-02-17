@@ -302,7 +302,10 @@ class AttributeSchema(Serializable):
         attr_cls = etau.get_class(d["type"])
         schema_cls = attr_cls.get_schema_cls()
         kwargs = schema_cls.get_kwargs(d)
-        kwargs.update({"static": d.get("static", False)})
+        kwargs.update({
+            "default": d.get("default", None),
+            "static": d.get("static", False)
+        })
         return schema_cls(d["name"], **kwargs)
 
 
@@ -402,7 +405,7 @@ class NumericAttributeSchema(AttributeSchema):
 class BooleanAttributeSchema(AttributeSchema):
     '''Class that encapsulates the schema of boolean attributes.'''
 
-    def __init__(self, name, static=False):
+    def __init__(self, name, static=False, default=None):
         '''Creates a BooleanAttributeSchema instance.
 
         Args:
