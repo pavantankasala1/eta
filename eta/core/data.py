@@ -203,17 +203,17 @@ class AttributeSchema(Serializable):
     module.
     '''
 
-    def __init__(self, name, static=False, default=None):
+    def __init__(self, name, constant=False, default=None):
         '''Initializes the AttributeSchema. All subclasses should call this
         constructor.
 
         Args:
             name: the name of the attribute
-            static: whether the attribute value can change over time in a
+            constant: whether the attribute value can change over time in a
                 video
         '''
         self.name = name
-        self.static = bool(static)
+        self.constant = bool(constant)
         self.default = default
         self.type = etau.get_class_name(self)[:-6]  # removes "Schema"
         self._attr_cls = etau.get_class(self.type)
@@ -304,7 +304,7 @@ class AttributeSchema(Serializable):
         kwargs = schema_cls.get_kwargs(d)
         kwargs.update({
             "default": d.get("default", None),
-            "static": d.get("static", False)
+            "constant": d.get("constant", False)
         })
         return schema_cls(d["name"], **kwargs)
 
@@ -317,7 +317,7 @@ class AttributeSchemaError(Exception):
 class CategoricalAttributeSchema(AttributeSchema):
     '''Class that encapsulates the schema of categorical attributes.'''
 
-    def __init__(self, name, categories=None, static=False, exclusive=False,
+    def __init__(self, name, categories=None, constant=False, exclusive=False,
                  default=None):
         '''Creates a CategoricalAttributeSchema instance.
 
@@ -327,7 +327,7 @@ class CategoricalAttributeSchema(AttributeSchema):
                 default, an empty set is used
         '''
         super(CategoricalAttributeSchema, self).__init__(
-            name, static=static, default=default)
+            name, constant=constant, default=default)
         self.exclusive = bool(exclusive)
         self.categories = set(categories or [])
 
@@ -358,7 +358,7 @@ class CategoricalAttributeSchema(AttributeSchema):
 class NumericAttributeSchema(AttributeSchema):
     '''Class that encapsulates the schema of numeric attributes.'''
 
-    def __init__(self, name, static=False, range=None, default=None):
+    def __init__(self, name, constant=False, range=None, default=None):
         '''Creates a NumericAttributeSchema instance.
 
         Args:
@@ -366,7 +366,7 @@ class NumericAttributeSchema(AttributeSchema):
             range: the (min, max) range for the attribute
         '''
         super(NumericAttributeSchema, self).__init__(
-            name, static=static, default=default)
+            name, constant=constant, default=default)
         self.range = tuple(range or [])
 
     def is_valid_value(self, value):
@@ -405,13 +405,13 @@ class NumericAttributeSchema(AttributeSchema):
 class BooleanAttributeSchema(AttributeSchema):
     '''Class that encapsulates the schema of boolean attributes.'''
 
-    def __init__(self, name, static=False, default=None):
+    def __init__(self, name, constant=False, default=None):
         '''Creates a BooleanAttributeSchema instance.
 
         Args:
             name: the name of the attribute
         '''
-        super(BooleanAttributeSchema, self).__init__(name, static=static,
+        super(BooleanAttributeSchema, self).__init__(name, constant=constant,
                                                      default=default)
 
     def is_valid_value(self, value):
