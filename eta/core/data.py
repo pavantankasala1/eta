@@ -577,8 +577,7 @@ class CategoricalAttributeSchema(AttributeSchema):
             a dictioanry of parsed keyword arguments
         '''
         return {
-            "categories": d.get("categories", None),
-            "exclusive": d.get("exclusive", None)
+            "categories": d.get("categories", None)
         }
 
 
