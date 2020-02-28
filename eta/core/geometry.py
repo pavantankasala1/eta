@@ -2,7 +2,7 @@
 Core data structures for working with geometric concepts like points,
 bounding boxes, etc.
 
-Copyright 2017-2019, Voxel51, Inc.
+Copyright 2017-2020, Voxel51, Inc.
 voxel51.com
 
 Brian Moore, brian@voxel51.com
@@ -21,6 +21,27 @@ from builtins import *
 
 import eta.core.numutils as etan
 from eta.core.serial import BigContainer, Container, Serializable, Set, BigSet
+
+
+def compute_minimal_covering_box(bounding_box, *args):
+    '''Computes the minimal covering BoundingBox for the given BoundingBoxes.
+
+    Args:
+        bounding_box: a BoundingBox
+        *args: additional `BoundingBox`s
+
+    Returns:
+        the minimal covering BoundingBox
+    '''
+    tlx, tly, brx, bry = bounding_box.to_coords()
+
+    for bbox in args:
+        tlx = min(tlx, bbox.top_left.x)
+        tly = min(tly, bbox.top_left.y)
+        brx = max(brx, bbox.bottom_right.x)
+        bry = max(bry, bbox.bottom_right.y)
+
+    return BoundingBox.from_coords(tlx, tly, brx, bry)
 
 
 class BoundingBox(Serializable):
@@ -91,6 +112,27 @@ class BoundingBox(Serializable):
         return (
             self.top_left, self.top_right, self.bottom_right, self.bottom_left)
 
+    @property
+    def is_proper(self):
+        '''Whether the bounding box is proper, i.e., its top-left coordinate
+        lies to the left and above its bottom right coordinate.
+        '''
+        return self.height() >= 0 and self.width() >= 0
+
+    def ensure_proper(self):
+        '''Ensures that the bounding box if proper by swapping its coordinates
+        as necessary.
+        '''
+        if self.height() < 0:
+            tly, bry = self.bottom_right.y, self.top_left.y
+            self.top_left.y = tly
+            self.bottom_right.y = bry
+
+        if self.width() < 0:
+            tlx, brx = self.bottom_right.x, self.top_left.x
+            self.top_left.x = tlx
+            self.bottom_right.x = brx
+
     def coords_in(self, frame_size=None, shape=None, img=None):
         '''Returns the coordinates of the bounding box in the specified image.
 
@@ -156,8 +198,8 @@ class BoundingBox(Serializable):
         The coordinates are clamped to [0, 1] x [0, 1] if necessary.
 
         Args:
-            alpha: the desired padding relative to the size of this
-                bounding box; a float in [-1, \\inf)
+            alpha: the desired padding relative to the size of this bounding
+                box; a float in [-1, \\inf)
 
         Returns:
             the padded BoundingBox
@@ -174,7 +216,7 @@ class BoundingBox(Serializable):
         brx, bry = RelativePoint.clamp(
             self.bottom_right.x + wpad, self.bottom_right.y + hpad)
 
-        return BoundingBox(RelativePoint(tlx, tly), RelativePoint(brx, bry))
+        return BoundingBox.from_coords(tlx, tly, brx, bry)
 
     def height(self):
         '''Computes the height of the bounding box, in [0, 1].
@@ -231,7 +273,7 @@ class BoundingBox(Serializable):
         if (brx - tlx < 0) or (bry - tly < 0):
             return BoundingBox.empty()
 
-        return BoundingBox(RelativePoint(tlx, tly), RelativePoint(brx, bry))
+        return BoundingBox.from_coords(tlx, tly, brx, bry)
 
     def contains_box(self, bbox):
         '''Determines if this bounding box contains the given bounding box.
@@ -288,6 +330,15 @@ class BoundingBox(Serializable):
             a BoundingBox
         '''
         return cls(RelativePoint.origin(), RelativePoint.origin())
+
+    def to_coords(self):
+        '''Returns a tuple containing the top-left and bottom-right coordinates
+        of the bounding box.
+
+        Returns:
+            a (tlx, tly, brx, bry) tuple
+        '''
+        return self.top_left.to_tuple() + self.bottom_right.to_tuple()
 
     @classmethod
     def from_coords(cls, tlx, tly, brx, bry):
