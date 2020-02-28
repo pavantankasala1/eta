@@ -544,7 +544,7 @@ class VideoLabels(
     def has_frame_attributes(self):
         '''Whether the video has at least one frame-level attribute.'''
         for frame_number in self:
-            if self[frame_number].has_frame_attributes:
+            if self[frame_number].has_attributes:
                 return True
 
         return False
