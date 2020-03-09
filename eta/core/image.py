@@ -36,7 +36,7 @@ import cv2
 import numpy as np
 
 import eta
-import eta.core.frames as etaf
+from eta.core.frames import FrameLabels, FrameLabelsSchema
 import eta.core.labels as etal
 import eta.core.serial as etas
 import eta.core.utils as etau
@@ -101,7 +101,7 @@ def make_image_sequence_patt(basedir, basename="", patt=None, ext=None):
 ###### Image Labels ###########################################################
 
 
-class ImageLabels(etaf.FrameLabels):
+class ImageLabels(FrameLabels):
     '''Class encapsulating labels for an image.
 
     ImageLabels are spatial concepts that describe a collection of information
@@ -185,12 +185,14 @@ class ImageLabels(etaf.FrameLabels):
             d, filename=filename, metadata=metadata)
 
 
-class ImageLabelsSchema(etaf.FrameLabelsSchema):
-    '''Schema for ImageLabels.
+class ImageLabelsSchema(FrameLabelsSchema):
+    '''Schema describing the content of one or more ImageLabels.
 
     Attributes:
-        attrs: an AttributeContainerSchema describing attributes of the
-            image(s)
+        attrs: an AttributeContainerSchema describing constant attributes of
+            the image(s)
+        frames: an AttributeContainerSchema describing frame-level attributes
+            of the image(s)
         objects: an ObjectContainerSchema describing the objects in the
             image(s)
         events: an EventContainerSchema describing the events in the image(s)
@@ -1098,7 +1100,9 @@ def scale_frame_size(frame_size, scale):
 
 
 def clamp_frame_size(frame_size, max_size):
-    '''Clamps the frame size to the given maximum size
+    '''Clamps the frame size to the given maximum size.
+
+    The aspect ratio of the input frame size is preserved.
 
     Args:
         frame_size: a (width, height) tuple
@@ -1112,8 +1116,10 @@ def clamp_frame_size(frame_size, max_size):
     alpha = 1
     if max_size[0] > 0:
         alpha = min(alpha, max_size[0] / frame_size[0])
+
     if max_size[1] > 0:
         alpha = min(alpha, max_size[1] / frame_size[1])
+
     return scale_frame_size(frame_size, alpha)
 
 
